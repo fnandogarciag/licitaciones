@@ -1,5 +1,3 @@
 # Ignore built artifacts and caches
-backend/lib/**
 .next/**
-frontend/.next/**
 **/*.tsbuildinfo

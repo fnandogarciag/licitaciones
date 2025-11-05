@@ -2,7 +2,7 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import nextPlugin from '@next/eslint-plugin-next';
-import reactHooks from 'eslint-plugin-react-hooks'; // 👈 IMPORT CORRECTO
+import reactHooks from 'eslint-plugin-react-hooks';
 import prettier from 'eslint-config-prettier';
 
 /**

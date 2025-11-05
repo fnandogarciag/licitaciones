@@ -1,171 +1,205 @@
-## Quick start
+# Sistema de Gestión de Licitaciones
 
-Primero: decide si vas a usar Docker (recomendado) o ejecutar localmente.
+Sistema web para gestionar procesos de licitación
 
-Docker (recomendado)
+## Tecnologías y Estructura
 
-PowerShell:
+### Stack Principal
 
-```powershell
-docker compose up -d --build
+- Frontend y Backend: Next.js 16 (App Router)
+- ORM: TypeORM
+- Base de datos: PostgreSQL
+- Contenedores: Docker y Docker Compose
+
+### Estructura del Proyecto
+
+```
+src/
+├── app/                    # Rutas y componentes Next.js
+│   ├── api/               # API endpoints
+│   ├── ui/                # Componentes reutilizables
+│   └── utils/             # Utilidades frontend
+├── modules/               # Módulos backend
+│   ├── procesos/         # Gestión de procesos
+│   ├── empresas/         # Gestión de empresas
+│   └── ...               # Otros módulos
+├── migrations/           # Migraciones SQL
+├── config/              # Configuración backend
+└── scripts/             # Scripts de utilidad
+
+Archivos Principales:
+- docker-compose.yml    # Configuración de contenedores
+- next.config.ts       # Configuración de Next.js
+- tsconfig.json        # Configuración de TypeScript
+- package.json         # Dependencias y scripts
 ```
 
-Comandos útiles (PowerShell):
+## Librerías y Dependencias
+
+Las dependencias principales del proyecto (definidas en `package.json`) son:
+
+Dependencias (producción):
+
+- `next` 16.0.1 — framework React/SSR (App Router)
+- `react` 19.2.0 — biblioteca UI
+- `react-dom` 19.2.0 — renderizado React
+- `typeorm` ^0.3.27 — ORM (PostgreSQL)
+- `pg` ^8.16.3 — driver PostgreSQL
+- `reflect-metadata` ^0.2.2 — metadatos para decoradores (TypeORM)
+- `class-validator` ^0.14.2 — validación de DTOs/entities
+- `js-cookie` ^3.0.5 — manejo de cookies en frontend
+
+Dependencias de desarrollo:
+
+- `typescript` ^5 — soporte TS
+- `eslint` ^9 — linter
+- `eslint-config-next` 16.0.1 — reglas para Next.js
+- `tailwindcss` ^4 y `@tailwindcss/postcss` ^4 — utilidades CSS
+- `@types/node`, `@types/react`, `@types/react-dom` — tipos para TS
+
+Nota: para ver las versiones exactas revisa `package.json` en la raíz. Mantén `package-lock.json` actualizado para reproducibilidad.
+
+## Requisitos Previos
+
+- Node.js LTS (18 o 20)
+- npm
+- PostgreSQL (si no usas Docker)
+- Docker y Docker Compose (recomendado)
+
+## Configuración Inicial
+
+1. Clonar el repositorio
+2. Configurar variables de entorno:
 
 ```powershell
-# ver logs
-docker compose logs -f frontend
-docker compose logs -f backend
-
-# detener y eliminar contenedores y redes
-docker compose down
-
-# detener y eliminar contenedores + volúmenes
-docker compose down -v
-```
-
-Local (sin Docker)
-
-Requisitos: Node.js LTS (recomendado 18 o 20) y npm.
-
-Desde la raíz del repo (es un monorepo con workspaces):
-
-```powershell
-npm install
-# ejecutar modo desarrollo (arranca frontend y backend en modo dev)
-npm run dev
-```
-
-Build para producción (desde la raíz):
-
-```powershell
-npm run build
-```
-
-Notas sobre variables de entorno
-
-Hay un archivo `./.env.example` en la raíz. Copia y edítalo para crear `.env` antes de ejecutar si no usas Docker:
-
-```powershell
+# Copiar archivo de ejemplo
 copy .env.example .env
+
+# Editar las variables según tu entorno
 notepad .env
 ```
 
-Variables importantes (resumen):
-
-- POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, POSTGRES_PORT
-- BACKEND_PORT, FRONTEND_PORT
-- DB_HOST, DB_PORT, DB_USER, DB_PASS, DB_NAME
-- NEXT_PUBLIC_USE_DOCKER (true/false)
-- ADMIN_USER, ADMIN_PASSWORD
-- NEXT_SERVER_ACTIONS_ENCRYPTION_KEY (opcional — ver nota abajo)
-
-Nota sobre `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`:
-Algunas configuraciones de Next.js (manifiesto de Server Actions cifrado) pueden requerir una clave en producción. No suele ser necesaria para desarrollo local, pero si despliegas en production/hosting que exige esta clave, añade una base64 de 32 bytes en la variable.
-
-Seed de datos (backend)
+3. Verificar la configuración:
 
 ```powershell
-npm run seed --workspace=backend
+npm run check-env
 ```
 
-## Detalles de compilación del backend
+## Inicio Rápido
 
-El backend se compone de dos pasos principales durante el build:
-
-1. Compilar TypeScript -> emite JS en `outDir` (por defecto `./dist`).
-   - Esto lo hace el comando `tsc --project tsconfig.build.json` definido en `backend/package.json`.
-   - `backend/tsconfig.build.json` tiene `outDir: ./dist`, y además incluye `src/entities/**` para que las clases de entidad se emitan en `dist/entities`.
-
-2. `next build` -> genera la carpeta `.next` (artefactos de Next) para producción.
-
-Script de build (desde la raíz o desde `backend`):
+### 1. Usando Docker (Recomendado)
 
 ```powershell
-# desde la raíz (workspaces)
-npm run build:backend
-
-# o desde la carpeta backend
-cd backend
-npm install
-npm run build
-```
-
-Qué busca el runtime
-
-- En tiempo de ejecución, `backend/src/data-source.ts` intenta cargar las clases de entidad desde la carpeta compilada. Busca la variable de entorno `BUILD_OUTDIR` (por ejemplo `dist`) y por defecto usa `dist`.
-- En otras palabras, tras compilar deberías tener `backend/dist/entities/*.js`. Si el proceso no encuentra las entidades revisa `BUILD_OUTDIR` y que la carpeta `dist/entities` exista.
-
-Ejecutar el backend en producción (PowerShell)
-
-Si quieres arrancar el backend de forma manual en producción (sin Docker), establece las variables de entorno y arranca:
-
-```powershell
-$env:BUILD_OUTDIR='dist'
-$env:NODE_ENV='production'
-cd backend
-npm run start
-```
-
-Observaciones sobre Docker
-
-- El `backend/Dockerfile` ya compila el backend dentro de la etapa builder y copia `dist` al contenedor de producción. Además copia `dist` a `lib` como compatibilidad hacia atrás; el runner establece `ENV BUILD_OUTDIR=dist`.
-- Por ese motivo, arrancar con `docker compose up -d --build` normalmente evita problemas de entidades faltantes.
-
-Comprobación rápida si falla la carga de entidades
-
-1. Verifica que `backend/dist/entities` exista después de la compilación.
-2. Verifica el valor de `BUILD_OUTDIR` en el entorno del proceso (debe apuntar a la carpeta que contiene `entities`).
-3. Si usas un despliegue que no ejecuta el `tsc` automáticamente, asegúrate de ejecutar `npm run build` en `backend` antes de arrancar.
-
-## Seed avanzado y migraciones
-
-Cómo ejecutar el seed (poblado de ejemplo)
-
-- Local (sin Docker):
-
-```powershell
-# compilar backend para generar dist/entities
-npm run build:backend
-
-# ejecutar seed en el workspace backend
-npm run seed --workspace=backend
-```
-
-- Con Docker (imagen ya incluye los artefactos compilados):
-
-```powershell
-# arranca contenedores si no están en ejecución
+# Iniciar los contenedores
 docker compose up -d --build
 
-# ejecutar seed dentro del contenedor backend
-docker compose exec backend npm run seed
+# Detener y eliminar contenedores
+docker compose down
+
+# Detener y eliminar contenedores + volúmenes
+docker compose down -v
 ```
+
+### 2. Ejecución Local
+
+Asegúrate de tener PostgreSQL instalado y configurado localmente.
+
+```powershell
+# Instalar dependencias
+npm install
+
+# Modificar DB_HOST en .env
+# Cambiar DB_HOST=postgres_db a DB_HOST=localhost
+# Usa las variables con valores directos (sin ${})
+# Asegúrate que PostgreSQL esté instalado y corriendo
+# Los valores DB_USER, DB_PASS y DB_NAME deben coincidir con los de POSTGRES_*
+
+# Desarrollo
+npm run dev
+
+# O para producción
+npm run build
+npm start
+```
+
+## Scripts Disponibles
+
+### Desarrollo
+
+- `npm run dev`: Inicia el proyecto en modo desarrollo
+- `npm run lint`: Ejecuta el linter
+- `npm run lint:fix`: Corrige problemas de linting automáticamente
+
+### Producción
+
+- `npm run build`: Compila el proyecto para producción
+- `npm start`: Inicia el proyecto en modo producción
+
+### Utilidades
+
+- `npm run check-env`: Verifica las variables de entorno requeridas
+- `npm run check-db`: Verifica la conexión a la base de datos
+- `npm run seed`: Ejecuta el script de poblado inicial de datos
+
+## Variables de Entorno Requeridas
+
+```bash
+# PostgreSQL
+POSTGRES_USER=usuario_postgres
+POSTGRES_PASSWORD=contraseña_postgres
+POSTGRES_DB=nombre_base_datos
+POSTGRES_PORT=5432
+
+# Aplicación
+FRONTEND_PORT=3000
+
+# Conexión Base de Datos
+DB_HOST=postgres_db  # (o localhost sin Docker)
+DB_PORT=5432
+DB_USER=${POSTGRES_USER}
+DB_PASS=${POSTGRES_PASSWORD}
+DB_NAME=${POSTGRES_DB}
+
+# Credenciales Admin
+ADMIN_USER=usuario_admin
+ADMIN_PASSWORD=contraseña_admin
+```
+
+## Poblado Inicial de Datos (Seed)
+
+Para ejecutar el script de poblado inicial:
+
+### Usando Docker:
+
+```bash
+# Desde el host
+docker compose exec nextjs_app npm run seed
+
+# O dentro del contenedor
+docker compose exec nextjs_app bash
+npm run seed
+```
+
+### Desarrollo Local:
+
+```bash
+npm run seed
+```
+
+El script creará:
+
+- Usuarios administradores iniciales
+- Estados de proceso predeterminados
+- Tipos de proceso
+- Datos de ejemplo para pruebas
 
 Notas sobre migraciones y SQL
 
 - Este repo incluye un directorio `migrations/` (opcional) y scripts SQL de ejemplo. Si prefieres usar migraciones gestionadas por TypeORM en lugar del seed, ejecuta el flujo de build para generar `dist` y luego aplica las migraciones con las herramientas que prefieras (o implementa un script `npm run migrate`).
 
-## Verificación de Dockerfiles
-
-Revisión rápida de ambos Dockerfiles (frontend y backend):
-
-- Ambos usan `node:20-alpine` en las etapas `builder` y `runner`. Esto es coherente con el uso de Node 20 en CI/producción.
-- El `backend/Dockerfile` compila TypeScript (`npm run build`) dentro de la etapa builder y copia `dist` al runner. Además exporta `ENV BUILD_OUTDIR=dist` en el runner — esto coincide con la lógica de `backend/src/data-source.ts` que busca entidades en `dist/entities`.
-- El `frontend/Dockerfile` compila el frontend y copia `.next` y `public` al runner; también permite pasar `NEXT_PUBLIC_BACKEND_URL` como argumento de build.
-
-Puntos a tener en cuenta / checklist (si algo falla):
-
-1. Asegúrate de que la etapa builder completa `npm run build` sin errores. Revisa los logs del build si ves que faltan archivos `dist`.
-2. Si el contenedor runner no tiene `dist` o las entidades, comprueba que la línea `COPY --from=builder /app/backend/dist ./dist` en el Dockerfile se ejecutó correctamente y que no hubo errores de permisos.
-3. Comprueba que `BUILD_OUTDIR` esté definido en el entorno del proceso (el Dockerfile del runner establece `ENV BUILD_OUTDIR=dist`). Si tu despliegue cambia esa variable, actualiza la ruta en consecuencia.
-4. Si ves problemas con dependencias hoisted (paquetes no encontrados a runtime), comprueba que tanto `/app/node_modules` como `/app/backend/node_modules` se copiaran al contenedor runner como hace el Dockerfile del backend.
-
-Si quieres, puedo añadir comandos para probar la integridad de cada contenedor (pequeños `docker compose exec ... ls -la` y `node -e 'require("./dist/data-source.js")'` para validar carga). Dime si quieres que los incluya.
-
 Notas de portabilidad y recomendaciones
 
-- Instala dependencias desde la raíz: `npm install`. El proyecto usa npm workspaces; instalar sólo en `frontend` o `backend` puede dejar dependencias hoisted fuera.
+- Instala dependencias desde la raíz: `npm install`.
 - El repo ya incluye `package-lock.json` en la raíz; mantenlo para reproducibilidad (`npm ci` para installs limpias).
 - Recomiendo añadir `.nvmrc` indicando la versión Node LTS que usas (ej. `18`) si tu equipo usa nvm.
 
@@ -280,25 +314,66 @@ Confirmación del usuario (UI) — ya tienes ConfirmModal.
 Registrar auditoría del borrado y usuario.
 Ejemplo: no permitir eliminar una Empresa si existen consorcio_empresa asociados a menos que se borren explícitamente o se permita cascade.
 
-## UI components: Button
+## ## Componentes UI
 
-This project includes a shared Button component located at `frontend/app/ui/Button.tsx`.
+### Button (`src/app/ui/Button.tsx`)
 
-Key features:
+- Variantes: `primary`, `secondary`, `ghost`
+- Soporte para `href`, `icon`, `loading`
+- Demo en `/button-demo`
 
-- Variants: `primary`, `secondary`, `ghost` for consistent styling across the app.
-- `href` support: pass `href="/path"` and the component will render a `next/link` anchor.
-- `icon` and `iconPosition` props to show an icon on the left or right.
-- `loading` prop shows a small spinner and disables the button.
+### DatePicker (`src/app/ui/DatePicker.tsx`)
 
-Quick examples:
+- Selector de fechas personalizado
+- Formato local es-CO
+- Validación de fechas
 
-`<Button variant="primary">Guardar</Button>` — primary action
+### Modales
 
-`<Button variant="secondary">Cancelar</Button>` — secondary action
+- `ConfirmModal`: Para acciones que requieren confirmación
+- `ProcessCreateModal`: Para creación de procesos
 
-`<Button href="/" variant="ghost">Ir al inicio</Button>` — link styled as button
+## Guía para Desarrolladores
 
-`<Button variant="primary" icon={<svg>...</svg>} iconPosition="right">Enviar</Button>`
+### Buenas Prácticas
 
-Use this component to standardize buttons across the UI. See `/button-demo` for a simple visual demo.
+- Instalar dependencias desde la raíz: `npm install`
+- Usar `npm ci` para instalaciones limpias y reproducibles
+- Seguir las convenciones de TypeScript
+- Mantener el archivo package-lock.json actualizado
+
+### Convenciones
+
+- Las validaciones de números usan:
+  - Coma (,) como separador decimal
+  - Punto (.) como separador de miles
+- Códigos SECOP válidos:
+  - Formato: CO1.NTC.número o NTC.número
+  - Ejemplo: CO1.NTC.123456 o NTC.789012
+
+### Base de Datos
+
+- Migraciones disponibles en `src/migrations/`
+- Usar transacciones para operaciones múltiples
+- Seguir convenciones de nomenclatura SQL
+
+### Solución de Problemas
+
+1. Error de conexión a la base de datos:
+
+   - Verificar variables de entorno con `npm run check-env`
+   - Comprobar conexión con `npm run check-db`
+   - Revisar logs de Docker si es necesario
+
+2. Errores de TypeScript:
+
+   - Ejecutar `npm run lint` para identificar problemas
+   - Usar `npm run lint:fix` para correcciones automáticas
+
+3. Problemas de Docker:
+   - Recrear contenedores: `docker compose down && docker compose up -d`
+   - Limpiar volúmenes si es necesario: `docker compose down -v`
+
+```
+
+```

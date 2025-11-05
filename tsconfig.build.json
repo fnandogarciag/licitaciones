@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "dist",
+    "module": "commonjs",
+    "moduleResolution": "node"
+  },
+  "exclude": [
+    "node_modules",
+    "**/*.test.ts",
+    "src/app/**/*",
+    ".next",
+    "next-env.d.ts"
+  ],
+  "include": ["src/modules/**/*", "src/config/**/*"]
+}

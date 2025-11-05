@@ -1,46 +1,38 @@
 {
   "name": "licitaciones",
-  "type": "module",
+  "version": "0.1.0",
   "private": true,
-  "workspaces": [
-    "frontend",
-    "backend"
-  ],
   "scripts": {
-    "dev:frontend": "npm run dev --workspace=frontend",
-    "dev:backend": "npm run dev --workspace=backend",
-    "dev": "npm run dev:frontend & npm run dev:backend",
-    "build:frontend": "npm run build --workspace=frontend",
-    "build:backend": "npm run build --workspace=backend",
-    "build": "npm run build:frontend && npm run build:backend",
-    "start:frontend": "npm run start --workspace=frontend",
-    "start:backend": "npm run start --workspace=backend",
-    "lint": "eslint \"frontend/**/*.{js,jsx,ts,tsx}\" \"backend/**/*.{js,jsx,ts,tsx}\" --ignore-pattern \"**/.next/**\" --ignore-pattern \"frontend/.next/**\" --ignore-pattern \"backend/.next/**\" --ignore-pattern \"backend/lib/**\""
+    "predev": "node ./scripts/check-env.js",
+    "dev": "node ./scripts/check-db.js && next dev",
+    "build": "tsc --project tsconfig.build.json && node ./scripts/ensure-dist-root-datasource.js && next build",
+    "prestart": "node ./scripts/check-env.js",
+    "start": "node ./scripts/check-db.js && next start",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "check-env": "node ./scripts/check-env.js",
+    "check-db": "node ./scripts/check-db.js",
+    "seed": "node ./src/scripts/seed.js"
   },
   "dependencies": {
-    "@next/eslint-plugin-next": "^15.5.6",
     "class-validator": "^0.14.2",
     "js-cookie": "^3.0.5",
-    "mysql2": "^3.15.3",
-    "next": "^15.5.6",
+    "next": "16.0.1",
     "pg": "^8.16.3",
-    "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.27"
   },
   "devDependencies": {
-    "@eslint/js": "^9.38.0",
-    "@tailwindcss/postcss": "^4.1.15",
+    "@tailwindcss/postcss": "^4",
     "@types/js-cookie": "^3.0.6",
-    "@types/react": "^19.2.2",
-    "autoprefixer": "^10.4.21",
-    "eslint": "^9.38.0",
-    "eslint-config-next": "^15.5.6",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-react-hooks": "^7.0.0",
-    "postcss": "^8.5.6",
-    "prettier": "^3.6.2",
-    "tailwindcss": "^4.1.15",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.46.2"
+    "@types/node": "^20.19.24",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.0.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }
