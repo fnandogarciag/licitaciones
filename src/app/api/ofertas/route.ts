@@ -23,7 +23,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    // server-side validation: require consorcioId when creating an oferta
+    // Validación del lado del servidor: se requiere consorcioId al crear una oferta
     if (
       body == null ||
       body.consorcioId === undefined ||
@@ -38,7 +38,6 @@ export async function POST(req: Request) {
     return NextResponse.json(data);
   } catch (e: any) {
     const msg = e?.message ?? String(e);
-    // return 400 for common validation messages coming from service
     return NextResponse.json({ error: msg }, { status: 400 });
   }
 }

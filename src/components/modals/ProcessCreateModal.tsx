@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Button from './Button';
-import { API_ROUTES } from '@/app/utils/routes';
-import { extractCodigoFromUrl } from '../utils/url';
-import { MESSAGES } from '@/app/utils/messages';
+import Button from '@/components/buttons/Button';
+import { API_ROUTES } from '@utils/api/routes';
+import { extractCodigoFromUrl } from '@utils/validation/url';
+import { MESSAGES } from '@utils/validation/messages';
 import { useRouter } from 'next/navigation';
 
 type Process = { id?: number; ID?: number; [key: string]: unknown };

@@ -2,8 +2,8 @@
 // Importa el hook para obtener la ruta actual
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import LoginButton from './LoginButton';
-import Button from './Button';
+import LoginButton from '../buttons/LoginButton';
+import Button from '../buttons/Button';
 import Cookies from 'js-cookie';
 import { useEffect, useState } from 'react';
 

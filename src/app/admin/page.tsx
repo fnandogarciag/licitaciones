@@ -1,18 +1,18 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
-import ConfirmModal from '../ui/ConfirmModal';
-import Button from '../ui/Button';
-import Input from '../ui/Input';
-import Select from '../ui/Select';
-import Toggle from '../ui/Toggle';
-import { formatFecha, parseFechaLocalToISO } from '../utils/tiempo';
+import ConfirmModal from '@/components/modals/ConfirmModal';
+import Button from '@/components/buttons/Button';
+import Input from '@/components/forms/Input';
+import Select from '@/components/forms/Select';
+import Toggle from '@/components/forms/Toggle';
+import { formatFecha, parseFechaLocalToISO } from '@utils/format/tiempo';
 import {
   normalizeDecimalInput,
   validateDecimalPrecision,
   formatWithCommaDecimal,
   formatForDisplay,
-} from '../utils/number';
-import { getRelationId } from '../utils/relations';
+} from '@utils/format/number';
+import { getRelationId } from '@utils/api/relations';
 
 const ENTITIES = [
   'empresas',
@@ -28,7 +28,7 @@ const ENTITIES = [
   'estado_proceso',
 ];
 
-import { API_ROUTES } from '../utils/routes';
+import { API_ROUTES } from '@utils/api/routes';
 
 const getId = (it: any) =>
   it?.id ??
@@ -318,7 +318,7 @@ export default function AdminPage() {
           codigoLink: procesoCodigoLink || undefined,
         };
       } else if (entity === 'lotes') {
-        // normalize decimals to string with 2 decimals
+        // Normalizar decimales a cadena con 2 decimales
         const normVal = normalizeDecimalInput(loteValor || null);
         const normPol = normalizeDecimalInput(lotePoliza || null);
         if (!normVal) {
@@ -355,7 +355,7 @@ export default function AdminPage() {
           empresaId: consorcioEmpresaEmpresaId || undefined,
         };
       } else if (entity === 'fecha_proceso') {
-        // Try to parse various local formats into an ISO string in Colombia timezone
+        // Intenta convertir varios formatos locales a una cadena ISO en la zona horaria de Colombia.
         const parsed = parseFechaLocalToISO(fechaProcesoFecha || undefined);
         if (fechaProcesoFecha && !parsed) {
           setError(
@@ -509,7 +509,6 @@ export default function AdminPage() {
           body: JSON.stringify(payload),
         });
       } else if (putQueryIdEntities.has(entity)) {
-        // backend handlers for these entities expect id in query params
         const url = `/api/${entity}?id=${encodeURIComponent(String(idToUse))}`;
         res = await fetch(url, {
           method: 'PUT',
@@ -600,7 +599,7 @@ export default function AdminPage() {
           method: 'DELETE',
         });
       } else {
-        // send id both in query and JSON body so route handlers that read either will work
+        // Envía el ID tanto en la consulta como en el cuerpo JSON para que funcionen los controladores de ruta que lean cualquiera de los dos.
         const url = `/api/${entity}?id=${encodeURIComponent(String(id))}`;
         res = await fetch(url, {
           method: 'DELETE',

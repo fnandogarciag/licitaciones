@@ -1,3 +1,0 @@
-# Ignore built artifacts and caches
-.next/**
-**/*.tsbuildinfo

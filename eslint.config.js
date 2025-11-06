@@ -12,15 +12,14 @@ export default tseslint.config(
   js.configs.recommended,
   tseslint.configs.recommended,
   {
-    files: ['**/*.{js,jsx,ts,tsx}'],
+    // lint only source files to avoid scanning generated artifacts (dist, .next)
+    files: ['src/**/*.{js,jsx,ts,tsx}'],
     ignores: [
       'node_modules/',
-      'dist/',
-      'build/',
-      '.next/',
-      'backend/lib/**',
-      'frontend/.next/',
-      'backend/.next/',
+      'node_modules/**',
+      'dist/**',
+      'build/**',
+      '.next/**',
       '*.config.js',
       '**/*.config.js',
       // ignore Next build artifacts and generated types
@@ -29,14 +28,15 @@ export default tseslint.config(
     ],
     languageOptions: {
       parserOptions: {
-        project: ['tsconfig.base.json', 'frontend/tsconfig.json'],
+        // use the repo tsconfigs (tsconfig.base.json doesn't exist in this repo)
+        project: ['tsconfig.json', 'tsconfig.build.json'],
         tsconfigRootDir: import.meta.dirname,
         sourceType: 'module',
       },
     },
     plugins: {
       '@next/next': nextPlugin,
-      'react-hooks': reactHooks, // 👈 REGISTRO DEL PLUGIN
+      'react-hooks': reactHooks,
     },
     // merge core-web-vitals rules as well as recommended rules
     rules: {
@@ -71,6 +71,26 @@ export default tseslint.config(
       // --- Next.js ---
       '@next/next/no-img-element': 'off',
       '@next/next/no-html-link-for-pages': 'off',
+    },
+  },
+  // overrides for node scripts (helpers, build scripts, etc.)
+  {
+    files: ['scripts/**/*.{js,cjs,mjs}'],
+    languageOptions: {
+      parserOptions: {
+        sourceType: 'script',
+      },
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+        require: 'readonly',
+        module: 'readonly',
+      },
+    },
+    rules: {
+      // allow console in scripts and commonjs require usage
+      'no-console': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
     },
   },
   prettier,

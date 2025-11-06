@@ -1,4 +1,6 @@
 FROM node:20-alpine AS base
+# Update npm to latest version
+RUN npm install -g npm@latest
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -41,6 +43,7 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/scripts ./scripts
 COPY .env .env
 
 # Ensure runtime has production node_modules so runtime require() finds packages like reflect-metadata

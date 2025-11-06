@@ -47,6 +47,7 @@ export async function GET(req: Request) {
     const data = await getService().findAll();
     return NextResponse.json(data);
   } catch (err: any) {
+    /* eslint-disable-next-line no-console */
     console.error('Error en /api/procesos GET:', err && (err.stack || err));
     return NextResponse.json(
       { error: err?.message ?? String(err) },
@@ -61,6 +62,7 @@ export async function POST(req: Request) {
     const data = await getService().create(body);
     return NextResponse.json(data);
   } catch (err: any) {
+    /* eslint-disable-next-line no-console */
     console.error('Error en /api/procesos POST:', err && (err.stack || err));
     return NextResponse.json(
       { error: err?.message ?? String(err) },
@@ -77,6 +79,7 @@ export async function PUT(req: Request) {
     const data = await getService().update(id, body);
     return NextResponse.json(data);
   } catch (err: any) {
+    /* eslint-disable-next-line no-console */
     console.error('Error en /api/procesos PUT:', err && (err.stack || err));
     return NextResponse.json(
       { error: err?.message ?? String(err) },
@@ -92,6 +95,7 @@ export async function DELETE(req: Request) {
     const data = await getService().remove(id);
     return NextResponse.json(data);
   } catch (err: any) {
+    /* eslint-disable-next-line no-console */
     console.error('Error en /api/procesos DELETE:', err && (err.stack || err));
     return NextResponse.json(
       { error: err?.message ?? String(err) },

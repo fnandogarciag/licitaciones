@@ -29,7 +29,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Error' }, { status: 404 });
     }
     return NextResponse.json(data);
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Error' }, { status: 500 });
   }
 }
@@ -53,7 +53,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Error' }, { status: 404 });
     }
     return NextResponse.json(data);
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Error' }, { status: 500 });
   }
 }

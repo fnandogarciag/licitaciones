@@ -3,15 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "node ./scripts/check-env.js",
-    "dev": "node ./scripts/check-db.js && next dev",
+    "check": "node -r dotenv/config ./scripts/check-env.js && node -r dotenv/config ./scripts/check-db.js",
+    "dev": "npm run check && next dev",
     "build": "tsc --project tsconfig.build.json && node ./scripts/ensure-dist-root-datasource.js && next build",
-    "prestart": "node ./scripts/check-env.js",
-    "start": "node ./scripts/check-db.js && next start",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "check-env": "node ./scripts/check-env.js",
-    "check-db": "node ./scripts/check-db.js",
+    "start": "next start",
+    "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
     "seed": "node ./src/scripts/seed.js"
   },
   "dependencies": {
@@ -30,8 +27,10 @@
     "@types/node": "^20.19.24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^16.6.1",
     "eslint": "^9",
     "eslint-config-next": "16.0.1",
+    "eslint-config-prettier": "^10.1.8",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

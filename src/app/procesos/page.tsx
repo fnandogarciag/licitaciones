@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import ProcessTable from '../ui/ProcessTable';
+import ProcessTable from '@/components/tables/ProcessTable';
 
 const Page: React.FC = () => {
   return (

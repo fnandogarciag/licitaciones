@@ -57,9 +57,11 @@ export const initializeDatabase = async () => {
     while (retries > 0) {
       try {
         await AppDataSource.initialize();
+        /* eslint-disable-next-line no-console */
         console.log('✅ Database initialized successfully');
         return AppDataSource;
       } catch (error) {
+        /* eslint-disable-next-line no-console */
         console.error(
           `❌ Error during database initialization (${retries} retries left):`,
           error,

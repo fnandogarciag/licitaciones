@@ -21,6 +21,7 @@ export class ProcesosService {
       try {
         await this.dataSource.initialize();
       } catch (err: any) {
+        /* eslint-disable-next-line no-console */
         console.error(
           'Error inicializando la base de datos en ProcesosService:',
           err,

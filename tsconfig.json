@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -22,15 +18,10 @@
     "emitDecoratorMetadata": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "src/*"
-      ],
-      "@modules/*": [
-        "src/modules/*"
-      ],
-      "@app/*": [
-        "src/app/*"
-      ]
+      "@/*": ["src/*"],
+      "@modules/*": ["src/modules/*"],
+      "@app/*": ["src/app/*"],
+      "@utils/*": ["src/lib/utils/*"]
     },
     "plugins": [
       {
@@ -46,7 +37,5 @@
     "**/*.tsx",
     "src/**/*"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

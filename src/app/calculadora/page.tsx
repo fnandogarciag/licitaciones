@@ -1,7 +1,10 @@
 'use client';
 import React, { useState } from 'react';
 import '../globals.css';
-import SMMLV, { SMMLV_ACTUAL } from '../ui/SalarioMinimoColombia';
+import SMMLV, {
+  SMMLV_ACTUAL,
+  Salarios,
+} from '@/components/common/SalarioMinimoColombia';
 
 // Utilidades
 const isValidYear = (year: string) => {
@@ -162,10 +165,7 @@ export default function CalculadoraPage() {
       return newResultados;
     });
   };
-  // (duplicate declaration removed)
-
-  // Importar Salarios correctamente
-  const { Salarios } = require('../ui/SalarioMinimoColombia');
+  // Salarios ya importado arriba
 
   return (
     <div className="min-h-screen flex flex-row items-start justify-center bg-gradient-to-br from-blue-900 via-purple-900 to-black">

@@ -1,5 +1,5 @@
 'use client';
-import Button from './Button';
+import Button from '../buttons/Button';
 
 // Componente modal de confirmación reutilizable
 // Props:

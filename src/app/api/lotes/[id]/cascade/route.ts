@@ -39,7 +39,7 @@ export async function DELETE(
     }
 
     return NextResponse.json({ success: true, data });
-  } catch (error: any) {
+  } catch {
     return NextResponse.json(
       { error: 'Error al eliminar el lote' },
       { status: 500 },

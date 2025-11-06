@@ -1,5 +1,4 @@
 'use client';
-import React from 'react';
 
 // Componente Toggle (switch) accesible
 // Props:
@@ -28,10 +27,14 @@ export default function Toggle({
       aria-checked={checked}
       aria-label={ariaLabel}
       onClick={() => onChange(!checked)}
-      className={`inline-flex items-center h-6 w-11 rounded-full p-1 transition-colors ${checked ? 'bg-blue-600' : 'bg-gray-300'} ${className}`}
+      className={`inline-flex items-center h-6 w-11 rounded-full p-1 transition-colors ${
+        checked ? 'bg-blue-600' : 'bg-gray-300'
+      } ${className}`}
     >
       <span
-        className={`bg-white w-4 h-4 rounded-full transform transition-transform ${checked ? 'translate-x-5' : 'translate-x-0'}`}
+        className={`bg-white w-4 h-4 rounded-full transform transition-transform ${
+          checked ? 'translate-x-5' : 'translate-x-0'
+        }`}
       />
     </button>
   );

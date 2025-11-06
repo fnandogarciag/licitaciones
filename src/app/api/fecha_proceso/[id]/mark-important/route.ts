@@ -30,7 +30,7 @@ export async function PATCH(
     const setTo = !!body.importante;
     const data = await getService().markImportant(id, setTo);
     return NextResponse.json(data);
-  } catch (e) {
+  } catch {
     return NextResponse.json(
       { error: 'Error al marcar la fecha' },
       { status: 500 },

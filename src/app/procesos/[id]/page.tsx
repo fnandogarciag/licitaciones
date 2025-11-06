@@ -17,7 +17,7 @@
 // -----------------------------------------------------------------------------
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { API_ROUTES } from '@/app/utils/routes';
+import { API_ROUTES } from '@utils/api/routes';
 
 // RelationEditor movido a nivel de módulo para que React mantenga una identidad
 // de componente estable y evite desmontarlo/remontarlo cuando el componente
@@ -160,24 +160,24 @@ const RelationEditor = React.memo(function RelationEditor({
   );
 });
 import { useParams } from 'next/navigation';
-import Button from '@app/ui/Button';
-import ConfirmModal from '@app/ui/ConfirmModal';
-import DatePicker from '@app/ui/DatePicker';
+import Button from '@/components/buttons/Button';
+import ConfirmModal from '@/components/modals/ConfirmModal';
+import DatePicker from '@/components/forms/DatePicker';
 import {
   pickFechaFromProceso,
   remainingTime,
   formatFecha,
   isoToDateAndTime,
   combineDateAndTimeToISO,
-} from '@app/utils/tiempo';
-import { extractCodigoFromUrl } from '@app/utils/url';
-import { MESSAGES } from '@app/utils/messages';
+} from '@utils/format/tiempo';
+import { extractCodigoFromUrl } from '@utils/validation/url';
+import { MESSAGES } from '@utils/validation/messages';
 import {
   normalizeDecimalInput,
   validateDecimalPrecision,
   formatWithCommaDecimal,
   formatForDisplay,
-} from '@app/utils/number';
+} from '@utils/format/number';
 
 type Proceso = any;
 
@@ -254,7 +254,7 @@ export default function Page() {
   const createOferta = async (consorcioId: number | null, loteId: number) => {
     // Guardia del lado del cliente: requerir la selección de un consorcio antes de intentar crear
     if (consorcioId == null) {
-      // mark attempted save for the target lote so validation UI appears
+      // Marcar intento de guardado para el lote objetivo para que aparezca la interfaz de validación
       try {
         setNewOfertaAttemptSave((s) => ({
           ...(s || {}),
@@ -310,7 +310,7 @@ export default function Page() {
         );
       }
       await refetchProceso();
-      // close the create-offer UI and reset draft/attempt flags
+      // Cierra la interfaz de usuario de creación de ofertas y restablece los indicadores de borrador/intento.
       try {
         setCreatingOption({ kind: null, name: '' });
       } catch {}
@@ -334,7 +334,7 @@ export default function Page() {
   };
 
   const startEditOferta = (of: any) => {
-    // If a create-offer form was open, close it when starting an edit
+    // Si había abierto un formulario para crear ofertas, se cierra al iniciar la edición.
     setCreatingOption({ kind: null, name: '' });
     setNewOfertaDraft({});
     setNewOfertaAttemptSave({});
@@ -365,7 +365,7 @@ export default function Page() {
   const saveOferta = async (id: number) => {
     const draft = ofertaEdits[String(id)];
     if (!draft) return;
-    // mark attempt so validation messages display
+    // Marcar intento para que se muestren los mensajes de validación
     setOfertaAttemptSave((s) => ({ ...s, [String(id)]: true }));
     try {
       setSaving(true);
@@ -451,10 +451,6 @@ export default function Page() {
     const found = (list || []).find((x: any) => String(x.id) === String(val));
     return found ? found.nombre : String(val);
   };
-  // RelationEditor: moved to module-level as a stable component so React doesn't
-  // remount it on every parent render (this was causing focus/caret loss while typing).
-  // The real implementation is declared at module scope below `imports` so it keeps
-  // a stable identity across renders. Here we just reference that component.
 
   // Formulario local para crear/editar una fecha
   // Props principales:
@@ -481,7 +477,7 @@ export default function Page() {
     const canSave = Boolean(
       draft?.tipoId && draft?.fechaDate && draft?.fechaTime,
     );
-    // Date selection is handled by the shared DatePicker component
+    // La selección de fecha es manejada por el componente DatePicker compartido
 
     return (
       <div className="flex flex-col gap-2">
@@ -707,7 +703,7 @@ export default function Page() {
       setEntidadDisplay(name);
       setEntidadQuery('');
       setEntidadSelected(idVal ?? null);
-      // ensure draft contains current selection so saveField works if user doesn't change selection
+      // Asegúrese de que el borrador contenga la selección actual para que saveField funcione si el usuario no cambia la selección.
       setDraft((d: any) => ({ ...d, entidad: idVal ?? null }));
     }
     if (field === 'tipoProceso') {
@@ -767,7 +763,7 @@ export default function Page() {
       }
     }
     if (field === 'anticipo') {
-      // make anticipo required when editing
+      // Hacer que Anticipo sea obligatorio al editar
       if (draft.anticipo === '' || draft.anticipo == null) {
         setFieldErrors((s) => ({ ...s, anticipo: 'Anticipo es obligatorio' }));
         return;
@@ -839,7 +835,7 @@ export default function Page() {
       }
     }
 
-    // additional client-side required validations for relations
+    // Validaciones adicionales del lado del cliente requeridas para las relaciones
     const value =
       opts?.valueOverride !== undefined ? opts.valueOverride : draft[field];
     const unboxed = idOf(value);
@@ -889,22 +885,22 @@ export default function Page() {
       });
       if (!res.ok) {
         const txt = await res.text().catch(() => undefined);
-        // show inline error for this field when possible
+        // Mostrar error en línea para este campo cuando sea posible
         setFieldErrors((s) => ({
           ...s,
           [field]: txt || `${res.status} ${res.statusText}`,
         }));
         throw new Error(txt || `${res.status} ${res.statusText}`);
       }
-      // After a PATCH many APIs return a partial object (or only the changed fields).
-      // To avoid losing other fields and relations, re-fetch the full recurso.
+      // Tras una solicitud PATCH, muchas API devuelven un objeto parcial (o solo los campos modificados).
+      // Para evitar la pérdida de otros campos y relaciones, se debe volver a solicitar el recurso completo.
       await refetchProceso();
       const close = opts?.closeAfterSave !== false; // default true
       if (close) {
         setEditing(null);
         setDraft({});
       }
-      // show transient success
+      // Mostrar éxito transitorio
       setFieldSuccess((s) => ({ ...s, [field]: true }));
       setTimeout(
         () => setFieldSuccess((s) => ({ ...s, [field]: false })),
@@ -962,7 +958,7 @@ export default function Page() {
       if (!createdName) createdName = creatingOption.name.trim();
       // si el servidor no devolvió un id, intentar parsear la cabecera Location u otro (mejor esfuerzo)
       if (createdId == null) {
-        // attempt to read Location header containing an id at the end
+        // Se intentó leer el location header que contiene un id al final.
         const location =
           res.headers.get('location') || res.headers.get('Location');
         if (location) {
@@ -977,7 +973,7 @@ export default function Page() {
       if (kind === 'entidad') {
         setEntidades((s) => [item, ...(s || [])]);
         setEntidadQuery(item.nombre ?? String(item.id));
-        // set as selected in draft and optimistic proceso update so UI reflects selection immediately
+        // Se ha establecido como seleccionado en borrador y se actualiza el proceso de forma optimista para que la interfaz de usuario refleje la selección inmediatamente.
         setDraft((d: any) => ({ ...(d || {}), entidad: item.id }));
         setProceso((p: any) => (p ? { ...p, entidad: item } : p));
       }
@@ -994,16 +990,16 @@ export default function Page() {
         setProceso((p: any) => (p ? { ...p, tipoProceso: item } : p));
       }
       if (kind === 'consorcio') {
-        // for consorcios we only update the consorcios list and select it for the new oferta draft
+        // Para los consorcios, solo actualizamos la lista de consorcios y los seleccionamos para el nuevo borrador de oferta.
         setConsorciosList((s) => [item, ...(s || [])]);
         setNewOfertaDraft((d: any) => ({ ...(d || {}), consorcioId: item.id }));
         setCreatingOption({ kind: null, name: '' });
         setNewConsorcioName('');
-        // ensure proceso.consorcios is fresh so the select inside proceso shows the new consorcio
+        // Asegurarse de que proceso.consorcios esté actualizado para que la selección dentro de proceso muestre el nuevo consorcio
         try {
           await refetchProceso();
         } catch {}
-        // if the oferta form was open and we have a loteId, create the oferta automatically
+        // Si el formulario de oferta estaba abierto y tenemos un loteId, la oferta se creará automáticamente.
         try {
           const loteId =
             newOfertaDraft && (newOfertaDraft as any).loteId
@@ -1017,9 +1013,9 @@ export default function Page() {
         }
         return;
       }
-      // clear the creating option for entidad/estado/tipo flows below
+      // Borre la opción de creación para los flujos de entidad/estado/tipo a continuación.
       setCreatingOption({ kind: null, name: '' });
-      // ensure lists are fresh (in case server assigns different IDs or other metadata)
+      // Asegurarse de que las listas estén actualizadas (en caso de que el servidor asigne diferentes ID u otros metadatos)
       await Promise.all([
         (async () => {
           try {
@@ -1046,8 +1042,8 @@ export default function Page() {
           } catch {}
         })(),
       ]);
-      // persist selection on the proceso and server and close the editor (default behavior)
-      // pass the id explicitly to avoid race conditions where draft hasn't updated yet
+      // Conservar la selección en el proceso y el servidor, y cerrar el editor (comportamiento predeterminado)
+      // Pasar el ID explícitamente para evitar condiciones de carrera cuando el borrador aún no se ha actualizado
       await refetchProceso();
       try {
         if (kind === 'entidad') {
@@ -1060,8 +1056,8 @@ export default function Page() {
           await saveField('tipoProceso', { valueOverride: item.id });
         }
       } catch {
-        // if saveField fails, we already refetched the proceso optimistically; show an error
-        // error handling inside saveField will update UI
+        // Si falla saveField, ya hemos reiniciado el proceso de forma optimista; mostrar un error
+        // El manejo de errores dentro de saveField actualizará la interfaz de usuario
       }
     } catch (e: any) {
       setError(e?.message ?? String(e));
@@ -1078,7 +1074,7 @@ export default function Page() {
   // Fecha CRUD helpers
   const createFecha = async () => {
     if (!proceso) return;
-    // mark that user attempted to create a fecha so validation messages display
+    // Marca que el usuario intentó crear una fecha para que se muestren los mensajes de validación.
     setNewFechaAttemptSave(true);
 
     const tipoId = newFechaDraft.tipoId;
@@ -1121,17 +1117,17 @@ export default function Page() {
       const created = await res.json().catch(() => undefined);
       // refresh proceso to include created fecha
       await refetchProceso();
-      // if user requested importante on creation, ensure server marks only this one as importante
+      // Si el usuario solicitó que fuera importante al crearlo, asegúrese de que el servidor marque solo este como importante.
       if ((newFechaDraft as any).importante) {
         try {
-          // If server returned the created resource and includes an id, prefer it
+          // Si el servidor devolvió el recurso creado e incluye un ID, es preferible.
           let createdId: string | number | undefined =
             created && (created.id ?? created.ID ?? created._id)
               ? created.id ?? created.ID ?? created._id
               : undefined;
-          // If we don't have an id, try to locate the created fecha by matching fecha + tipo
+          // Si no tenemos un ID, intentamos localizar la fecha creada haciendo coincidir fecha + tipo
           if (!createdId) {
-            // find the fecha in the refreshed proceso that matches our payload
+            // Encuentra la fecha en el proceso actualizado que coincida con nuestra carga útil.
             try {
               const parsedIso = combineDateAndTimeToISO(
                 newFechaDraft.fechaDate ?? null,
@@ -1182,12 +1178,12 @@ export default function Page() {
   };
 
   const startEditFecha = (f: any) => {
-    // If a create form was open, close it when starting an edit
+    // Si había un formulario de creación abierto, ciérrelo al iniciar una edición.
     setCreatingFecha(false);
     setNewFechaDraft({});
     setNewFechaAttemptSave(false);
     setEditingFechaId(f.id ?? String(Math.random()));
-    // convert stored ISO to separate date and time values
+    // Convertir valores ISO almacenados a valores de fecha y hora separados
     const parts = isoToDateAndTime(f.fecha ?? null);
     setFechaEdits((s) => ({
       ...s,
@@ -1220,7 +1216,7 @@ export default function Page() {
       draft?.fechaDate ?? null,
       draft?.fechaTime ?? null,
     );
-    // mark that user attempted to save this fecha so validation messages display
+    // Marcar que el usuario intentó guardar esta fecha para que se muestren los mensajes de validación
     if (key != null)
       setFechaAttemptSave((s) => ({ ...s, [String(key)]: true }));
     else setNewFechaAttemptSave(true);
@@ -1252,8 +1248,8 @@ export default function Page() {
           body: JSON.stringify({
             tipoFechaProcesoId: Number(tipoId),
             fecha: parsed,
-            // do NOT include 'importante' here to avoid DB constraint conflicts;
-            // if the user wants this fecha as importante, call the atomic
+            // NO incluir 'importante' aquí para evitar conflictos con las restricciones de la base de datos;
+            // Si el usuario desea que esta fecha sea importante, llamar a la operación atómica.
             // /mark-important endpoint after a successful PATCH.
           }),
         });
@@ -1266,7 +1262,7 @@ export default function Page() {
           throw new Error(txt || `${res.status} ${res.statusText}`);
         }
         await refetchProceso();
-        // if draft requested importante, ensure server unsets others atomically
+        // Si el borrador solicitado es importante, asegúrese de que el servidor elimine los demás de forma atómica.
         try {
           if (draft?.importante) {
             await fetch(`/api/fecha_proceso/${key}/mark-important`, {
@@ -1313,7 +1309,7 @@ export default function Page() {
     if (!proceso) return;
     try {
       setSaving(true);
-      // optimistic update: mark only the selected one as importante and others false
+      // marcar solo el elemento seleccionado como importante y los demás como falsos.
       setProceso((p: any) => {
         if (!p) return p;
         return {
@@ -1335,7 +1331,7 @@ export default function Page() {
         throw new Error(txt || `${res.status} ${res.statusText}`);
       }
 
-      // refresh to get authoritative state
+      // Refrescar para obtener el estado autoritativo
       await refetchProceso();
       showToast('Guardado', 'success');
     } catch (e: any) {
@@ -1382,9 +1378,9 @@ export default function Page() {
 
   const createLote = async () => {
     if (!proceso) return;
-    // mark that user attempted to create (so UI shows validation)
+    // Marcar que el usuario intentó crear (para que la UI muestre la validación)
     setNewLoteAttemptSave(true);
-    // client-side validation
+    // Validación del lado del cliente
     setLoteErrors((s) => ({ ...s, create: '' }));
     const normalizedValor = normalizeDecimalInput(newLoteDraft.valor ?? null);
     if (!normalizedValor) {
@@ -1420,8 +1416,8 @@ export default function Page() {
         payload.poliza = normalizedPol;
         payload.poliza_real = true;
       } else {
-        // If no póliza provided, compute a synthetic póliza = valor * 0.00013
-        // but mark poliza_real as false (it's not a real póliza)
+        // Si no se proporciona ninguna póliza, calcula una póliza sintética = valor * 0.00013
+        // pero marca poliza_real como falsa (no es una póliza real)
         try {
           const baseVal = Number(normalizedValor);
           if (!Number.isNaN(baseVal)) {
@@ -1462,7 +1458,7 @@ export default function Page() {
   };
 
   const startEditLote = (l: any) => {
-    // If a create-lote form was open, close it when starting an edit
+    // Si había abierto un formulario de creación de lotes, ciérrelo al iniciar una edición.
     setCreatingLote(false);
     setNewLoteDraft({});
     setNewLoteAttemptSave(false);
@@ -1470,7 +1466,7 @@ export default function Page() {
     // inicializar edits con valores formateados (separador de miles + coma decimal) o strings vacíos para que el usuario pueda escribir decimales
     const stripTrailingZeroCents = (formatted: string) => {
       if (!formatted) return '';
-      // if ends with ',00' remove the comma and zeros to simplify editing
+      // Si termina con ',00', elimine la coma y los ceros para simplificar la edición.
       if (formatted.endsWith(',00')) return formatted.slice(0, -3);
       return formatted;
     };
@@ -1481,7 +1477,7 @@ export default function Page() {
           l.valor != null
             ? stripTrailingZeroCents(formatForDisplay(l.valor))
             : '',
-        // If poliza_real is false (synthetic), show an empty input so user can add a real póliza
+        // Si poliza_real es falso (sintético), mostrar un campo vacío para que el usuario pueda añadir una póliza real.
         poliza:
           l.poliza != null && l.poliza_real !== false
             ? stripTrailingZeroCents(formatForDisplay(l.poliza))
@@ -1612,20 +1608,22 @@ export default function Page() {
     // realizar eliminación en cascada vía backend
     try {
       setSaving(true);
-      // Ensure id is a valid number before making the request
+      // Asegúrese de que el ID sea un número válido antes de realizar la solicitud.
       const numericId = Number(id);
       if (isNaN(numericId) || numericId <= 0) {
         throw new Error('ID de lote inválido');
       }
 
+      /* eslint-disable-next-line no-console */
       console.log('Attempting to delete lote with ID:', numericId);
 
-      // Ensure URL is absolute and properly constructed
+      // Asegúrese de que la URL sea absoluta y esté correctamente construida.
       const baseUrl = window.location.origin;
       const url = new URL(
         `/api/lotes/${numericId}/cascade`,
         baseUrl,
       ).toString();
+      /* eslint-disable-next-line no-console */
       console.log('Delete request URL:', url);
 
       const res = await fetch(url, {
@@ -1654,7 +1652,7 @@ export default function Page() {
     }
   };
 
-  // Oferta delete helper
+  // Helper para eliminar ofertas
   const deleteOferta = async (
     ofertaId: number | string,
     loteId?: number | string,
@@ -1904,7 +1902,7 @@ export default function Page() {
                     Vencido
                   </div>
                 );
-              // try to extract days/hours/min from the humanized string
+              // Intenta extraer días/horas/minutos de la humanized string
               const m = raw.match(
                 /(?:(\d+)\s*d[ií]a?s?)?\s*(?:(\d+)\s*hora?s?)?\s*(?:(\d+)\s*min)?/i,
               );
@@ -2496,7 +2494,7 @@ export default function Page() {
                 </div>
               )}
 
-              {/* Create new fecha (no max limit) */}
+              {/* Crear nueva fecha (sin límite máximo) */}
               {creatingFecha ? (
                 <div className="p-3 bg-white border rounded">
                   <div className="flex flex-col gap-2">
@@ -2529,7 +2527,7 @@ export default function Page() {
                   <Button
                     variant="primary"
                     onClick={() => {
-                      // ensure any edit form is closed when opening the create form
+                      // Asegúrese de que cualquier formulario de edición esté cerrado al abrir el formulario de creación.
                       setEditingFechaId(null);
                       setCreatingFecha(true);
                       setNewFechaDraft({});
@@ -2657,11 +2655,11 @@ export default function Page() {
                           <Button
                             variant="primary"
                             onClick={async () => {
-                              // ensure we have the latest consorcios before opening the form
+                              // Asegúrese de que disponemos de los consorcios más recientes antes de abrir el formulario
                               try {
                                 await loadConsorcios();
                               } catch {}
-                              // close any oferta editor if open
+                              // Cierre cualquier editor de oferta si está abierto
                               setEditingOfertaId(null);
                               setCreatingOption({ kind: 'oferta', name: '' });
                               setNewOfertaDraft({
@@ -2944,7 +2942,7 @@ export default function Page() {
                         placeholder="Número de póliza"
                       />
                     </div>
-                    {/* poliza_real is derived from presence of poliza; not user-editable */}
+                    {/* poliza_real se deriva de la presencia de poliza; no es editable por el usuario. */}
                     {loteErrors.create && (
                       <div className="text-red-600 text-sm">
                         {loteErrors.create}
@@ -2975,7 +2973,7 @@ export default function Page() {
                   <Button
                     variant="primary"
                     onClick={() => {
-                      // ensure any lote editor is closed when opening create form
+                      // Asegúrese de que cualquier editor de lote esté cerrado al abrir el formulario de creación
                       setEditingLoteId(null);
                       setNewLoteDraft({
                         valor: '',

@@ -29,7 +29,7 @@ export async function PATCH(
     const body = await req.json().catch(() => ({}));
     const data = await getService().update(id, body);
     return NextResponse.json(data);
-  } catch (e) {
+  } catch {
     return NextResponse.json(
       { error: 'Error al actualizar la fecha' },
       { status: 500 },
@@ -58,7 +58,7 @@ export async function DELETE(
 
     const data = await getService().remove(id);
     return NextResponse.json(data);
-  } catch (e) {
+  } catch {
     return NextResponse.json(
       { error: 'Error al eliminar la fecha' },
       { status: 500 },

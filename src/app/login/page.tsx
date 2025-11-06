@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import Cookies from 'js-cookie';
-import Button from '../ui/Button';
+import Button from '@/components/buttons/Button';
 import { useRouter } from 'next/navigation';
 
 // Componente funcional para la página de login

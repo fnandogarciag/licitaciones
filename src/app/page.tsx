@@ -1,4 +1,4 @@
-import ProcessTable from './ui/ProcessTable';
+import ProcessTable from '@/components/tables/ProcessTable';
 
 // Componente principal de la página de inicio
 export default function Home() {

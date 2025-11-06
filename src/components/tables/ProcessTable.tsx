@@ -10,18 +10,18 @@
 // -----------------------------------------------------------------------------
 
 import { useEffect, useState } from 'react';
-import DatePicker from './DatePicker';
+import DatePicker from '@/components/forms/DatePicker';
 import Link from 'next/link';
-import Button from './Button';
-import ProcessCreateModal from './ProcessCreateModal';
+import Button from '@/components/buttons/Button';
+import ProcessCreateModal from '@/components/modals/ProcessCreateModal';
 import { useRouter } from 'next/navigation';
 import {
   pickFechaFromProceso,
   remainingTime,
   formatFecha,
-} from '@/app/utils/tiempo';
-import { formatThousands } from '@/app/utils/number';
-import { API_ROUTES } from '@/app/utils/routes';
+} from '@utils/format/tiempo';
+import { formatThousands } from '@utils/format/number';
+import { API_ROUTES } from '@utils/api/routes';
 
 // Helper local: obtener tipoNombre normalizado (trim + toLowerCase) para comparaciones
 const getTipoNombreNormalized = (p: Proceso): string | null => {
@@ -98,7 +98,6 @@ export default function ProcessTable() {
   const [entidadFilter, setEntidadFilter] = useState('');
   const [anticipoMin, setAnticipoMin] = useState<number | ''>('');
   const [anticipoMax, setAnticipoMax] = useState<number | ''>('');
-  // Additional filters
   const [valorMin, setValorMin] = useState<string | ''>('');
   const [valorMax, setValorMax] = useState<string | ''>('');
   const [tipoFechaSelected, setTipoFechaSelected] = useState<string | ''>('');
@@ -523,14 +522,14 @@ export default function ProcessTable() {
           return false;
         if (tiempoMaxDays !== '') {
           if (tiempoMinDays !== '') {
-            // when min is present, only enforce max if max > min
+            //Cuando se especifica un mínimo, solo se aplicará el máximo si este es mayor que el mínimo.
             if (
               Number(tiempoMaxDays) > Number(tiempoMinDays) &&
               remDays > Number(tiempoMaxDays)
             )
               return false;
           } else {
-            // when min is empty, enforce max unconditionally
+            // Cuando el mínimo está vacío, se aplica el máximo incondicionalmente
             if (remDays > Number(tiempoMaxDays)) return false;
           }
         }
@@ -616,7 +615,7 @@ export default function ProcessTable() {
                       '',
                     );
                     if (raw === '') return setValorMin('');
-                    const truncated = raw.slice(0, 15); // limit to 15 digits
+                    const truncated = raw.slice(0, 15); // límite de 15 dígitos
                     setValorMin(formatThousands(truncated));
                   }}
                   placeholder="min"
@@ -636,7 +635,7 @@ export default function ProcessTable() {
                       '',
                     );
                     if (raw === '') return setValorMax('');
-                    const truncated = raw.slice(0, 15); // limit to 15 digits
+                    const truncated = raw.slice(0, 15); // límite de 15 dígitos
                     setValorMax(formatThousands(truncated));
                   }}
                   placeholder="max"
@@ -662,7 +661,7 @@ export default function ProcessTable() {
                   const raw = e.target.value.trim();
                   if (raw === '') return setAnticipoMin('');
                   const parsed = Number(raw);
-                  if (Number.isNaN(parsed)) return; // ignore invalid chars
+                  if (Number.isNaN(parsed)) return; // ignore caracteres inválidos
                   const truncated = Math.trunc(parsed);
                   const clamped = Math.max(0, Math.min(50, truncated));
                   setAnticipoMin(clamped as any);
@@ -689,7 +688,7 @@ export default function ProcessTable() {
                   const raw = e.target.value.trim();
                   if (raw === '') return setAnticipoMax('');
                   const parsed = Number(raw);
-                  if (Number.isNaN(parsed)) return; // ignore invalid chars
+                  if (Number.isNaN(parsed)) return; // ignore caracteres inválidos
                   const truncated = Math.trunc(parsed);
                   const clamped = Math.max(0, Math.min(50, truncated));
                   setAnticipoMax(clamped as any);
@@ -718,7 +717,7 @@ export default function ProcessTable() {
                 className="border border-gray-300 px-3 py-2 rounded-md bg-white text-gray-900 w-full"
               >
                 <option value="">(Todos)</option>
-                {/* derive options dynamically from items (normalized) */}
+                {/*derivar opciones dinámicamente a partir de elementos (normalizados)*/}
                 {Array.from(
                   new Set(
                     (items || [])
@@ -726,7 +725,7 @@ export default function ProcessTable() {
                       .filter(Boolean),
                   ),
                 ).map((t) => (
-                  // display the original casing by finding any item with this normalized value
+                  // Muestra la carcasa original buscando cualquier elemento con este valor normalizado.
                   <option key={String(t)} value={String(t)}>
                     {String(
                       ((items || []).find(
@@ -817,9 +816,9 @@ export default function ProcessTable() {
                   onChange={(e) => {
                     const raw = String(e.target.value || '').trim();
                     if (raw === '') return setTiempoMinDays('');
-                    // accept only whole non-negative digits (no decimals, commas, signs)
+                    // Solo se aceptan números enteros no negativos (sin decimales, comas ni signos).
                     if (!/^[0-9]+$/.test(raw)) return;
-                    const truncated = raw.slice(0, 4); // limit to 4 digits
+                    const truncated = raw.slice(0, 4); // limitar a 4 dígitos
                     const n = Math.max(0, Math.trunc(Number(truncated)));
                     setTiempoMinDays(n as any);
                   }}
@@ -843,9 +842,9 @@ export default function ProcessTable() {
                   onChange={(e) => {
                     const raw = String(e.target.value || '').trim();
                     if (raw === '') return setTiempoMaxDays('');
-                    // accept only whole non-negative digits (no decimals, commas, signs)
+                    // Solo se aceptan números enteros no negativos (sin decimales, comas ni signos).
                     if (!/^[0-9]+$/.test(raw)) return;
-                    const truncated = raw.slice(0, 4); // limit to 4 digits
+                    const truncated = raw.slice(0, 4); // limitar a 4 dígitos
                     const n = Math.max(0, Math.trunc(Number(truncated)));
                     setTiempoMaxDays(n as any);
                   }}
