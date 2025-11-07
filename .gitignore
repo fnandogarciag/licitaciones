@@ -33,9 +33,6 @@ docker-compose.override.yml
 migrations/*.js
 migrations/*.js.map
 
-# Scripts compilados
-scripts/**/*.js
-scripts/**/*.js.map
 
 # Modules compilados (si usas TS)
 modules/**/*.js
